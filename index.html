@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅遊客服工作台</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 左側客戶列表區 -->
+        <aside class="customer-list">
+            <div class="customer-list-header">
+                <h2>聯絡客戶</h2>
+                <div class="search-box">
+                    <input type="text" placeholder="搜尋客戶..." id="customerSearch">
+                </div>
+            </div>
+            <div class="customer-list-items" id="customerItems">
+                <!-- 客戶項目將由 JavaScript 動態生成 -->
+            </div>
+        </aside>
+
+        <!-- 中間對話區 -->
+        <main class="chat-area">
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <div class="avatar" id="chatAvatar"></div>
+                    <div class="user-info">
+                        <h3 id="chatName">選擇客戶開始對話</h3>
+                        <p id="chatCompany"></p>
+                    </div>
+                </div>
+                <div class="chat-status" id="chatStatus">
+                    <span class="status-dot offline"></span>
+                    <span class="status-text">離線</span>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <p>歡迎使用旅遊客服工作台</p>
+                    <p class="subtitle">從左側選擇客戶開始對話</p>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="toolbar">
+                    <button class="tool-btn" id="emojiBtn" title="表情符號">
+                        <span class="icon">😊</span>
+                    </button>
+                    <button class="tool-btn" id="fileBtn" title="傳送文件">
+                        <span class="icon">📎</span>
+                    </button>
+                    <button class="tool-btn" id="photoBtn" title="傳送照片">
+                        <span class="icon">📷</span>
+                    </button>
+                    <button class="tool-btn" id="screenshotBtn" title="截圖工具">
+                        <span class="icon">📸</span>
+                    </button>
+                    <button class="tool-btn" id="templateBtn" title="罐頭訊息">
+                        <span class="icon">💬</span>
+                    </button>
+                </div>
+                <div class="input-wrapper">
+                    <textarea 
+                        id="messageInput" 
+                        placeholder="輸入訊息..."
+                        rows="3"
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn">
+                        <span>發送</span>
+                    </button>
+                </div>
+                
+                <!-- 表情符號選擇器 -->
+                <div class="emoji-picker" id="emojiPicker">
+                    <div class="emoji-section">
+                        <div class="emoji-title">常用表情</div>
+                        <div class="emoji-grid">
+                            <span class="emoji-item">😊</span>
+                            <span class="emoji-item">😂</span>
+                            <span class="emoji-item">😍</span>
+                            <span class="emoji-item">👍</span>
+                            <span class="emoji-item">❤️</span>
+                            <span class="emoji-item">🙏</span>
+                            <span class="emoji-item">😎</span>
+                            <span class="emoji-item">🎉</span>
+                            <span class="emoji-item">😅</span>
+                            <span class="emoji-item">✨</span>
+                            <span class="emoji-item">🔥</span>
+                            <span class="emoji-item">💯</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 罐頭訊息選擇器 -->
+                <div class="template-picker" id="templatePicker">
+                    <div class="template-list" id="templateList">
+                        <!-- 將由 JavaScript 生成 -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 右側查詢區 -->
+        <aside class="query-panel">
+            <div class="query-header">
+                <h2>快速查詢</h2>
+            </div>
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="flight">機票</button>
+                <button class="tab-btn" data-tab="hotel">住宿</button>
+                <button class="tab-btn" data-tab="railway">鐵路</button>
+                <button class="tab-btn" data-tab="transfer">接送</button>
+                <button class="tab-btn" data-tab="rental">租車</button>
+            </div>
+            
+            <!-- 機票查詢表單 -->
+            <div class="query-form tab-content active" id="flight-form">
+                <div class="form-group">
+                    <label>出發地</label>
+                    <input type="text" id="flightFrom" placeholder="例如：台北" value="台北">
+                </div>
+                <div class="form-group">
+                    <label>目的地</label>
+                    <input type="text" id="flightTo" placeholder="例如：東京">
+                </div>
+                <div class="form-group">
+                    <label>出發日期</label>
+                    <input type="date" id="flightDepartDate">
+                </div>
+                <div class="form-group">
+                    <label>回程日期</label>
+                    <input type="date" id="flightReturnDate">
+                </div>
+                <div class="form-group">
+                    <label>人數</label>
+                    <select id="flightPassengers">
+                        <option value="1">1人</option>
+                        <option value="2">2人</option>
+                        <option value="3">3人</option>
+                        <option value="4">4人</option>
+                    </select>
+                </div>
+                <button class="query-btn" data-service="flight">查詢</button>
+            </div>
+
+            <!-- 住宿查詢表單 -->
+            <div class="query-form tab-content" id="hotel-form">
+                <div class="form-group">
+                    <label>目的地</label>
+                    <input type="text" id="hotelLocation" placeholder="例如：首爾">
+                </div>
+                <div class="form-group">
+                    <label>入住日期</label>
+                    <input type="date" id="hotelCheckIn">
+                </div>
+                <div class="form-group">
+                    <label>退房日期</label>
+                    <input type="date" id="hotelCheckOut">
+                </div>
+                <div class="form-group">
+                    <label>房間數</label>
+                    <select id="hotelRooms">
+                        <option value="1">1間</option>
+                        <option value="2">2間</option>
+                        <option value="3">3間</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>人數</label>
+                    <select id="hotelGuests">
+                        <option value="1">1人</option>
+                        <option value="2">2人</option>
+                        <option value="3">3人</option>
+                        <option value="4">4人</option>
+                    </select>
+                </div>
+                <button class="query-btn" data-service="hotel">查詢</button>
+            </div>
+
+            <!-- 鐵路查詢表單 -->
+            <div class="query-form tab-content" id="railway-form">
+                <div class="form-group">
+                    <label>國家/地區</label>
+                    <select id="railwayRegion">
+                        <option value="japan">日本</option>
+                        <option value="europe">歐洲</option>
+                        <option value="taiwan">台灣</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>通行證類型</label>
+                    <select id="railwayType">
+                        <option value="jr">JR鐵路周遊券</option>
+                        <option value="eurail">歐洲火車通行證</option>
+                        <option value="local">當地鐵路</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>使用天數</label>
+                    <select id="railwayDays">
+                        <option value="3">3天</option>
+                        <option value="7">7天</option>
+                        <option value="10">10天</option>
+                        <option value="14">14天</option>
+                        <option value="15">15天</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>人數</label>
+                    <select id="railwayPassengers">
+                        <option value="1">1人</option>
+                        <option value="2">2人</option>
+                        <option value="3">3人</option>
+                        <option value="4">4人</option>
+                    </select>
+                </div>
+                <button class="query-btn" data-service="railway">查詢</button>
+            </div>
+
+            <!-- 接送查詢表單 -->
+            <div class="query-form tab-content" id="transfer-form">
+                <div class="form-group">
+                    <label>機場</label>
+                    <select id="transferAirport">
+                        <option value="tpe">桃園機場</option>
+                        <option value="tpe">松山機場</option>
+                        <option value="other">其他機場</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>目的地</label>
+                    <input type="text" id="transferTo" placeholder="例如：台北車站">
+                </div>
+                <div class="form-group">
+                    <label>日期時間</label>
+                    <input type="datetime-local" id="transferDateTime">
+                </div>
+                <div class="form-group">
+                    <label>人數</label>
+                    <select id="transferPassengers">
+                        <option value="1">1人</option>
+                        <option value="2">2人</option>
+                        <option value="3">3人</option>
+                        <option value="4-6">4-6人</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>行李數量</label>
+                    <select id="transferLuggage">
+                        <option value="0">0件</option>
+                        <option value="1-2">1-2件</option>
+                        <option value="3-4">3-4件</option>
+                        <option value="5+">5件以上</option>
+                    </select>
+                </div>
+                <button class="query-btn" data-service="transfer">查詢</button>
+            </div>
+
+            <!-- 租車查詢表單 -->
+            <div class="query-form tab-content" id="rental-form">
+                <div class="form-group">
+                    <label>租車地點</label>
+                    <input type="text" id="rentalLocation" placeholder="例如：沖繩">
+                </div>
+                <div class="form-group">
+                    <label>取車日期</label>
+                    <input type="date" id="rentalPickupDate">
+                </div>
+                <div class="form-group">
+                    <label>還車日期</label>
+                    <input type="date" id="rentalReturnDate">
+                </div>
+                <div class="form-group">
+                    <label>車型</label>
+                    <select id="rentalCarType">
+                        <option value="compact">小型車</option>
+                        <option value="sedan">轎車</option>
+                        <option value="suv">SUV</option>
+                        <option value="van">廂型車</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>變速箱</label>
+                    <select id="rentalTransmission">
+                        <option value="auto">自動擋</option>
+                        <option value="manual">手動擋</option>
+                    </select>
+                </div>
+                <button class="query-btn" data-service="rental">查詢</button>
+            </div>
+            
+            <div class="query-results" id="queryResults">
+                <div class="empty-state">
+                    <p>選擇服務類型開始查詢</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- 隱藏的檔案輸入 -->
+    <input type="file" id="fileInput" style="display: none;">
+    <input type="file" id="photoInput" accept="image/*" style="display: none;">
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
+
