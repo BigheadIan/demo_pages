@@ -766,6 +766,52 @@ function captureScreenshot(x, y, width, height) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// 拖動功能
+function makeDraggable(panel) {
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+    
+    const header = panel.querySelector('.panel-header');
+    
+    header.addEventListener('mousedown', dragStart);
+    
+    function dragStart(e) {
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+        
+        if (e.target === header || header.contains(e.target)) {
+            isDragging = true;
+        }
+    }
+    
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            e.preventDefault();
+            
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+            
+            xOffset = currentX;
+            yOffset = currentY;
+            
+            setTranslate(currentX, currentY, panel);
+        }
+    });
+    
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+}
+
+function setTranslate(xPos, yPos, el) {
+    el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+}
+
 // 打開客戶管理面板
 function openCustomerManager() {
     if (!currentCustomerId) {
@@ -780,6 +826,7 @@ function openCustomerManager() {
     if (!detail) {
         content.innerHTML = '<p>找不到客戶詳細資料</p>';
         panel.classList.add('show');
+        makeDraggable(panel);
         return;
     }
     
@@ -820,6 +867,7 @@ function openCustomerManager() {
     
     content.innerHTML = html;
     panel.classList.add('show');
+    makeDraggable(panel);
 }
 
 // 關閉客戶管理面板
@@ -831,6 +879,7 @@ document.getElementById('closeCustomerManager').addEventListener('click', () => 
 function openAiEditor() {
     const panel = document.getElementById('aiEditorPanel');
     panel.classList.add('show');
+    makeDraggable(panel);
 }
 
 // 關閉AI編輯助手

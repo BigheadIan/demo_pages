@@ -694,19 +694,19 @@ body {
 
 /* 客戶管理和AI編輯助手面板 */
 .panel {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: fixed;
+    top: 80px;
+    right: 20px;
     background: white;
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    width: 600px;
+    width: 500px;
     max-width: 90%;
     max-height: 80vh;
     display: none;
     z-index: 1000;
     overflow: hidden;
+    cursor: move;
 }
 
 .panel.show {
@@ -720,11 +720,14 @@ body {
     align-items: center;
     padding: 16px 20px;
     border-bottom: 1px solid #e1e4e8;
+    cursor: move;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .panel-header h3 {
     font-size: 18px;
     margin: 0;
+    color: white;
 }
 
 .close-btn {
@@ -732,7 +735,7 @@ body {
     border: none;
     font-size: 24px;
     cursor: pointer;
-    color: #656d76;
+    color: white;
     padding: 0;
     width: 30px;
     height: 30px;
@@ -742,7 +745,8 @@ body {
 }
 
 .close-btn:hover {
-    color: #1f2328;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
 }
 
 .panel-content {
