@@ -553,6 +553,7 @@ body {
 
 .query-form {
     border-bottom: 1px solid #e1e4e8;
+    min-height: 200px;
 }
 
 .form-group {
@@ -894,14 +895,5 @@ body {
     }
 }
 
-.tab-content {
-    overflow-y: auto;
-    max-height: 400px;
-}
-
-.query-form {
-    display: flex;
-    flex-direction: column;
-}
 
 

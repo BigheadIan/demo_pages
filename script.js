@@ -203,11 +203,13 @@ function setupEventListeners() {
     const screenshotBtn = document.getElementById('screenshotBtn');
     const customerManagerBtn = document.getElementById('customerManagerBtn');
     const aiEditorBtn = document.getElementById('aiEditorBtn');
+    const signatureBtn = document.getElementById('signatureBtn');
     
     emojiBtn.addEventListener('click', toggleEmojiPicker);
     templateBtn.addEventListener('click', toggleTemplatePicker);
     customerManagerBtn.addEventListener('click', openCustomerManager);
     aiEditorBtn.addEventListener('click', openAiEditor);
+    signatureBtn.addEventListener('click', insertSignature);
     
     // 檔案上傳
     fileBtn.addEventListener('click', () => {
@@ -242,7 +244,18 @@ function setupEventListeners() {
     
     // 查詢按鈕
     document.querySelectorAll('.query-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => handleQuery(e.target.dataset.service));
+        btn.addEventListener('click', (e) => {
+            handleQuery(e.target.dataset.service);
+            // 查詢後隱藏表單區域
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                if (content.classList.contains('active')) {
+                    setTimeout(() => {
+                        content.style.display = 'none';
+                    }, 100);
+                }
+            });
+        });
     });
     
     // 點擊外部關閉選擇器
@@ -275,8 +288,13 @@ function initTabs() {
             const tabContents = document.querySelectorAll('.tab-content');
             tabContents.forEach(content => {
                 content.classList.remove('active');
+                content.style.display = 'none'; // 確保隱藏非活動的
             });
-            document.getElementById(`${tabName}-form`).classList.add('active');
+            
+            // 顯示當前TAB的表單
+            const activeForm = document.getElementById(`${tabName}-form`);
+            activeForm.classList.add('active');
+            activeForm.style.display = 'block';
             
             // 清空查詢結果，避免不同 TAB 的結果混淆
             queryResultsEl.innerHTML = '<div class="empty-state"><p>點擊「查詢」開始搜尋</p></div>';
@@ -854,6 +872,26 @@ function formatAsMessage(text) {
     }
     
     return formatted;
+}
+
+// 插入歡迎簽名
+function insertSignature() {
+    const messageInput = document.getElementById('messageInput');
+    const signature = `\n\n---\n旅遊服務團隊\n客服專員\nLINE: @travel_service\n電話: 02-1234-5678\n\n祝您旅途愉快！🌍✈️`;
+    
+    // 取得當前游標位置
+    const start = messageInput.selectionStart;
+    const end = messageInput.selectionEnd;
+    const text = messageInput.value;
+    
+    // 在游標位置插入簽名
+    const newText = text.substring(0, start) + signature + text.substring(end);
+    messageInput.value = newText;
+    
+    // 設定新的游標位置
+    const newPos = start + signature.length;
+    messageInput.setSelectionRange(newPos, newPos);
+    messageInput.focus();
 }
 
 // 啟動應用
