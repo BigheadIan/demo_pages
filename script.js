@@ -201,9 +201,13 @@ function setupEventListeners() {
     const fileBtn = document.getElementById('fileBtn');
     const photoBtn = document.getElementById('photoBtn');
     const screenshotBtn = document.getElementById('screenshotBtn');
+    const customerManagerBtn = document.getElementById('customerManagerBtn');
+    const aiEditorBtn = document.getElementById('aiEditorBtn');
     
     emojiBtn.addEventListener('click', toggleEmojiPicker);
     templateBtn.addEventListener('click', toggleTemplatePicker);
+    customerManagerBtn.addEventListener('click', openCustomerManager);
+    aiEditorBtn.addEventListener('click', openAiEditor);
     
     // 檔案上傳
     fileBtn.addEventListener('click', () => {
@@ -742,6 +746,114 @@ function captureScreenshot(x, y, width, height) {
     
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// 打開客戶管理面板
+function openCustomerManager() {
+    if (!currentCustomerId) {
+        alert('請先選擇客戶');
+        return;
+    }
+    
+    const panel = document.getElementById('customerManagerPanel');
+    const content = document.getElementById('customerManagerContent');
+    const detail = customerDetails[currentCustomerId];
+    
+    if (!detail) {
+        content.innerHTML = '<p>找不到客戶詳細資料</p>';
+        panel.classList.add('show');
+        return;
+    }
+    
+    let html = `
+        <div class="customer-detail-section">
+            <h4>聯絡資訊</h4>
+            <p><strong>姓名：</strong>${detail.name}</p>
+            <p><strong>電話：</strong>${detail.phone}</p>
+            <p><strong>Email：</strong>${detail.email}</p>
+            <p><strong>公司：</strong>${detail.company}</p>
+        </div>
+        
+        <div class="customer-detail-section">
+            <h4>偏好設定</h4>
+            <div class="tags">
+                ${detail.preferences.map(pref => `<span class="tag">${pref}</span>`).join('')}
+            </div>
+        </div>
+        
+        <div class="customer-detail-section">
+            <h4>客服備註</h4>
+            <p>${detail.notes}</p>
+        </div>
+        
+        <div class="customer-detail-section">
+            <h4>歷史行程</h4>
+            ${detail.history.map(item => `
+                <div class="history-item">
+                    <div class="history-item-header">
+                        <strong>${item.destination}</strong>
+                        <span>${item.date}</span>
+                    </div>
+                    <p><strong>服務類型：</strong>${item.service} | <strong>狀態：</strong>${item.status}</p>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    content.innerHTML = html;
+    panel.classList.add('show');
+}
+
+// 關閉客戶管理面板
+document.getElementById('closeCustomerManager').addEventListener('click', () => {
+    document.getElementById('customerManagerPanel').classList.remove('show');
+});
+
+// 打開AI編輯助手
+function openAiEditor() {
+    const panel = document.getElementById('aiEditorPanel');
+    panel.classList.add('show');
+}
+
+// 關閉AI編輯助手
+document.getElementById('closeAiEditor').addEventListener('click', () => {
+    document.getElementById('aiEditorPanel').classList.remove('show');
+});
+
+// AI編輯轉換功能
+document.getElementById('aiConvertBtn').addEventListener('click', () => {
+    const input = document.getElementById('aiInput').value.trim();
+    const result = document.getElementById('aiResult');
+    
+    if (!input) {
+        alert('請輸入要整理的內容');
+        return;
+    }
+    
+    // 模擬AI轉換 - 將查詢結果格式化為友善的訊息
+    const formatted = formatAsMessage(input);
+    
+    result.innerHTML = `<div class="formatted-text">${formatted}</div>`;
+});
+
+function formatAsMessage(text) {
+    // 簡單的格式化邏輯 - 將結果轉換為對話格式
+    let formatted = text;
+    
+    // 如果包含價格，加上友善的前綴
+    formatted = formatted.replace(/NT\$\s*([\d,]+)/g, '僅需 NT$ $1');
+    
+    // 如果包含多個項目，使用列表格式
+    if (text.includes('\n') || text.includes('、')) {
+        formatted = '為您推薦以下方案：\n\n' + formatted;
+    }
+    
+    // 加上結尾
+    if (!formatted.includes('祝您旅途愉快')) {
+        formatted += '\n\n如需預訂或有任何問題，歡迎隨時詢問！';
+    }
+    
+    return formatted;
 }
 
 // 啟動應用

@@ -61,6 +61,12 @@
                     <button class="tool-btn" id="templateBtn" title="罐頭訊息">
                         <span class="icon">💬</span>
                     </button>
+                    <button class="tool-btn" id="customerManagerBtn" title="客戶管理">
+                        <span class="icon">👤</span>
+                    </button>
+                    <button class="tool-btn" id="aiEditorBtn" title="AI編輯助手">
+                        <span class="icon">🤖</span>
+                    </button>
                 </div>
                 <div class="input-wrapper">
                     <textarea 
@@ -98,6 +104,37 @@
                 <div class="template-picker" id="templatePicker">
                     <div class="template-list" id="templateList">
                         <!-- 將由 JavaScript 生成 -->
+                    </div>
+                </div>
+                
+                <!-- 客戶管理面板 -->
+                <div class="panel customer-manager-panel" id="customerManagerPanel">
+                    <div class="panel-header">
+                        <h3>客戶管理</h3>
+                        <button class="close-btn" id="closeCustomerManager">&times;</button>
+                    </div>
+                    <div class="panel-content" id="customerManagerContent">
+                        <!-- 將由 JavaScript 生成 -->
+                    </div>
+                </div>
+                
+                <!-- AI編輯助手面板 -->
+                <div class="panel ai-editor-panel" id="aiEditorPanel">
+                    <div class="panel-header">
+                        <h3>AI編輯助手</h3>
+                        <button class="close-btn" id="closeAiEditor">&times;</button>
+                    </div>
+                    <div class="panel-content">
+                        <div class="ai-editor-tips">
+                            <p>💡 將右側查詢到的資料整理成適合發送的訊息</p>
+                        </div>
+                        <div class="ai-form">
+                            <textarea id="aiInput" placeholder="輸入要整理的內容..." rows="6"></textarea>
+                            <button class="ai-convert-btn" id="aiConvertBtn">轉換</button>
+                        </div>
+                        <div class="ai-result" id="aiResult">
+                            <p class="placeholder-text">轉換結果將顯示在這裡</p>
+                        </div>
                     </div>
                 </div>
             </div>

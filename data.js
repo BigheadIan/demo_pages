@@ -303,4 +303,96 @@ function getSourceColor(source) {
     return colors[source] || "#999";
 }
 
+// 客戶詳細資訊模擬數據
+const customerDetails = {
+    1: {
+        name: "王小明",
+        email: "wang@mediatek.com",
+        phone: "0912-345-678",
+        company: "聯發科",
+        preferences: ["商務艙", "市中心", "日式料理", "溫泉旅館"],
+        notes: "VIP客戶，偏愛高品質服務，曾多次選擇日本行程。注意：不喜歡紅眼航班。",
+        history: [
+            { date: "2023/05", destination: "大阪", service: "機加酒", status: "完成" },
+            { date: "2023/11", destination: "東京", service: "自由行", status: "完成" },
+            { date: "2024/02", destination: "北海道", service: "旅遊團", status: "完成" }
+        ]
+    },
+    2: {
+        name: "張雅芳",
+        email: "chang@tsmc.com",
+        phone: "0933-456-789",
+        company: "台積電",
+        preferences: ["經濟艙", "購物區", "韓國料理", "商務酒店"],
+        notes: "經常出差，效率優先，喜歡就近原則。建議提供早餐的酒店。",
+        history: [
+            { date: "2023/07", destination: "首爾", service: "商務出差", status: "完成" },
+            { date: "2024/01", destination: "釜山", service: "自由行", status: "完成" },
+            { date: "2024/04", destination: "首爾", service: "商務出差", status: "進行中" }
+        ]
+    },
+    3: {
+        name: "李志強",
+        email: "lee@yanzhi.com",
+        phone: "0987-654-321",
+        company: "言智",
+        preferences: ["經濟艙", "民宿", "自由行", "CP值"],
+        notes: "預算有限學生族群，追求高CP值方案。對優惠活動敏感。",
+        history: [
+            { date: "2023/09", destination: "沖繩", service: "自由行", status: "完成" },
+            { date: "2024/01", destination: "泰國", service: "背包客", status: "完成" }
+        ]
+    },
+    4: {
+        name: "陳美玲",
+        email: "chen@mediatek.com",
+        phone: "0922-888-999",
+        company: "聯發科",
+        preferences: ["商務艙", "歐洲", "文化之旅", "精品酒店"],
+        notes: "文化愛好者，喜歡深度旅遊，對歷史古蹟特別感興趣。願意為優質體驗多付費。",
+        history: [
+            { date: "2023/06", destination: "法國", service: "自由行", status: "完成" },
+            { date: "2023/12", destination: "義大利", service: "自由行", status: "完成" },
+            { date: "2024/06", destination: "瑞士", service: "自由行", status: "已預訂" }
+        ]
+    },
+    5: {
+        name: "林建宏",
+        email: "lin@tsmc.com",
+        phone: "0988-777-666",
+        company: "台積電",
+        preferences: ["商務艙", "機場接送", "快捷服務", "靠近機場"],
+        notes: "商務旅客，重視效率和舒適度。經常需要機場接送服務。建議配合補班機時間。",
+        history: [
+            { date: "2023/08", destination: "新加坡", service: "商務出差", status: "完成" },
+            { date: "2023/12", destination: "香港", service: "商務出差", status: "完成" },
+            { date: "2024/05", destination: "上海", service: "商務出差", status: "已預訂" }
+        ]
+    },
+    6: {
+        name: "黃淑娟",
+        email: "huang@yanzhi.com",
+        phone: "0911-222-333",
+        company: "言智",
+        preferences: ["經濟艙", "海景", "度假村", "親子友善"],
+        notes: "親子旅遊愛好者，重視安全性。偏好套裝行程，省去規劃麻煩。對兒童友善設施有需求。",
+        history: [
+            { date: "2023/08", destination: "沖繩", service: "親子旅遊", status: "完成" },
+            { date: "2024/01", destination: "峇里島", service: "度假旅遊", status: "完成" }
+        ]
+    },
+    7: {
+        name: "吳志明",
+        email: "wu@mediatek.com",
+        phone: "0933-111-444",
+        company: "聯發科",
+        preferences: ["商務艙", "熱帶島嶼", "水上活動", "度假氛圍"],
+        notes: "喜歡海島度假，每年固定安排放鬆之旅。對水上活動套餐有興趣。",
+        history: [
+            { date: "2023/04", destination: "峇里島", service: "自由行", status: "完成" },
+            { date: "2023/10", destination: "馬爾地夫", service: "度假", status: "完成" }
+        ]
+    }
+};
+
 
