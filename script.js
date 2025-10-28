@@ -769,47 +769,67 @@ function captureScreenshot(x, y, width, height) {
 // 拖動功能
 function makeDraggable(panel) {
     let isDragging = false;
-    let currentX;
-    let currentY;
-    let initialX;
-    let initialY;
-    let xOffset = 0;
-    let yOffset = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let initialX = 0;
+    let initialY = 0;
     
     const header = panel.querySelector('.panel-header');
+    
+    // 如果已經有拖動功能，就不要重複添加
+    if (panel.dataset.draggable === 'true') {
+        return;
+    }
+    panel.dataset.draggable = 'true';
     
     header.addEventListener('mousedown', dragStart);
     
     function dragStart(e) {
-        initialX = e.clientX - xOffset;
-        initialY = e.clientY - yOffset;
-        
-        if (e.target === header || header.contains(e.target)) {
-            isDragging = true;
+        // 如果是點擊關閉按鈕，不要觸發拖動
+        if (e.target.classList.contains('close-btn')) {
+            return;
         }
+        
+        initialX = e.clientX;
+        initialY = e.clientY;
+        
+        // 獲取面板當前位置
+        const rect = panel.getBoundingClientRect();
+        currentX = rect.left;
+        currentY = rect.top;
+        
+        isDragging = true;
+        
+        // 添加全局事件監聽
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
     }
     
-    document.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-            e.preventDefault();
-            
-            currentX = e.clientX - initialX;
-            currentY = e.clientY - initialY;
-            
-            xOffset = currentX;
-            yOffset = currentY;
-            
-            setTranslate(currentX, currentY, panel);
-        }
-    });
+    function drag(e) {
+        if (!isDragging) return;
+        
+        e.preventDefault();
+        
+        const xPos = e.clientX - initialX + currentX;
+        const yPos = e.clientY - initialY + currentY;
+        
+        // 限制在視窗範圍內
+        const maxX = window.innerWidth - panel.offsetWidth;
+        const maxY = window.innerHeight - panel.offsetHeight;
+        
+        const finalX = Math.max(0, Math.min(xPos, maxX));
+        const finalY = Math.max(0, Math.min(yPos, maxY));
+        
+        panel.style.left = finalX + 'px';
+        panel.style.top = finalY + 'px';
+        panel.style.right = 'auto';
+    }
     
-    document.addEventListener('mouseup', () => {
+    function dragEnd() {
         isDragging = false;
-    });
-}
-
-function setTranslate(xPos, yPos, el) {
-    el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('mouseup', dragEnd);
+    }
 }
 
 // 打開客戶管理面板
