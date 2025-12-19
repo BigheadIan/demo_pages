@@ -18,7 +18,7 @@ let faqData = [];
  * 載入 FAQ 資料
  */
 export async function loadFAQData() {
-  const faqPath = path.join(__dirname, '../../ai_training/faq_knowledge_base.csv');
+  const faqPath = path.join(__dirname, '../data/faq_knowledge_base.csv');
 
   try {
     const csvContent = fs.readFileSync(faqPath, 'utf-8');

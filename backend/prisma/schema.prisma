@@ -1,0 +1,384 @@
+// 金龍永盛客服管理後台 - 資料庫模型
+// Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==================== 列舉類型 ====================
+
+enum Role {
+  SUPER_ADMIN   // 超級管理員：全部查看權限
+  REGION_ADMIN  // 區域管理員：管理自己區域
+  AGENT         // 客服人員：處理對話
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum OnlineStatus {
+  ONLINE
+  AWAY
+  OFFLINE
+}
+
+enum ConversationStatus {
+  BOT       // AI 處理中
+  WAITING   // 等待人工接聽
+  ASSIGNED  // 已指派客服
+  CLOSED    // 已結束
+}
+
+enum MessageSenderType {
+  CUSTOMER
+  BOT
+  AGENT
+}
+
+enum MessageContentType {
+  TEXT
+  IMAGE
+  FILE
+  TEMPLATE
+}
+
+// ==================== 標籤模型 ====================
+
+model Tag {
+  id          String       @id @default(uuid())
+  regionId    String?      // null = 全域標籤
+  region      Region?      @relation(fields: [regionId], references: [id])
+  name        String
+  color       String       @default("#6366f1")
+  isSystem    Boolean      @default(false) // 系統預設標籤
+  isActive    Boolean      @default(true)
+
+  // 關聯
+  customers   CustomerTag[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([regionId, name])
+  @@index([regionId])
+  @@index([isSystem])
+}
+
+model CustomerTag {
+  id          String   @id @default(uuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  tagId       String
+  tag         Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@unique([customerId, tagId])
+  @@index([customerId])
+  @@index([tagId])
+}
+
+// ==================== CRM 客戶模型 ====================
+
+model CrmCustomer {
+  id            String    @id @default(uuid())
+  customerCode  String    @unique  // 客戶編號（從外部 CRM 系統同步）
+  name          String
+  phone         String?
+  email         String?
+  address       String?
+  company       String?
+  notes         String?
+  metadata      Json?     // 外部系統同步的額外資料
+  externalId    String?   // 外部系統 ID
+  lastSyncAt    DateTime? // 最後同步時間
+
+  // 關聯
+  customers     Customer[] // 多個 LINE/FB 帳號可對應同一個 CRM 客戶
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([customerCode])
+  @@index([phone])
+  @@index([email])
+}
+
+// ==================== 用戶模型 ====================
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  passwordHash  String
+  name          String
+  role          Role         @default(AGENT)
+  regionId      String?
+  region        Region?      @relation(fields: [regionId], references: [id])
+  status        UserStatus   @default(ACTIVE)
+  onlineStatus  OnlineStatus @default(OFFLINE)
+  lastLoginAt   DateTime?
+
+  // 歡迎簽名（客服接取對話時自動發送）
+  welcomeSignature String?
+
+  // 關聯
+  assignedConversations Conversation[] @relation("AssignedAgent")
+  sentMessages          Message[]      @relation("SentByAgent")
+  createdQuickReplies   QuickReply[]   @relation("CreatedQuickReplies")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([regionId])
+  @@index([role])
+  @@index([onlineStatus])
+}
+
+// ==================== 區域模型 ====================
+
+model Region {
+  id                     String   @id @default(uuid())
+  name                   String   // 區域名稱：台北總部、高雄分部
+  code                   String   @unique // 區域代碼：TPE, KHH
+
+  // LINE 設定
+  lineChannelId          String   @unique
+  lineChannelSecret      String
+  lineChannelAccessToken String
+
+  // 設定
+  settings               Json     @default("{}")
+  // settings 結構：
+  // {
+  //   workingHours: { start: "09:00", end: "18:00", timezone: "Asia/Taipei", workDays: [1,2,3,4,5] },
+  //   autoReplyEnabled: true,
+  //   humanTransferThreshold: 0.5,
+  //   welcomeMessage: "您好..."
+  // }
+
+  isActive               Boolean  @default(true)
+
+  // 關聯
+  users          User[]
+  conversations  Conversation[]
+  customers      Customer[]
+  dailyStats     DailyStats[]
+  tags           Tag[]
+  quickReplies   QuickReply[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==================== 客戶模型 ====================
+
+model Customer {
+  id           String  @id @default(uuid())
+  regionId     String
+  region       Region  @relation(fields: [regionId], references: [id])
+
+  // 來源資訊
+  source       String  // LINE | FB | WEB
+  sourceUserId String  // LINE userId / FB PSID
+
+  // 個人資料
+  displayName  String
+  name         String?
+  email        String?
+  phone        String?
+  company      String?
+  avatarUrl    String?
+  pictureUrl   String?   // LINE 頭像 URL（從 LINE Profile 取得）
+
+  // 興趣與偏好
+  interests    String[] @default([])
+  preferences  String[] @default([])
+  notes        String?
+  vipLevel     Int      @default(0) // 0-5
+
+  // CRM 客戶關聯（多對一）
+  crmCustomerId String?
+  crmCustomer   CrmCustomer? @relation(fields: [crmCustomerId], references: [id])
+
+  // 統計
+  totalConversations Int @default(0)
+  lastContactAt      DateTime?
+
+  // 關聯
+  conversations Conversation[]
+  customerTags  CustomerTag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([regionId, source, sourceUserId])
+  @@index([regionId])
+  @@index([source])
+  @@index([crmCustomerId])
+}
+
+// ==================== 對話模型 ====================
+
+model Conversation {
+  id              String             @id @default(uuid())
+  regionId        String
+  region          Region             @relation(fields: [regionId], references: [id])
+  customerId      String
+  customer        Customer           @relation(fields: [customerId], references: [id])
+
+  // 來源
+  source          String             // LINE | FB | WEB
+  sourceUserId    String             // LINE userId
+
+  // 狀態
+  status          ConversationStatus @default(BOT)
+  assignedAgentId String?
+  assignedAgent   User?              @relation("AssignedAgent", fields: [assignedAgentId], references: [id])
+  priority        Int                @default(3) // 1-5 (5 最高)
+
+  // 轉人工資訊
+  botHandoffReason String?
+  botHandoffAt     DateTime?
+
+  // 元數據
+  lastIntent      String?
+  lastMessageAt   DateTime           @default(now())
+  messageCount    Int                @default(0)
+  botMessageCount Int                @default(0)
+
+  // 關聯
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  closedAt  DateTime?
+
+  @@index([regionId])
+  @@index([status])
+  @@index([assignedAgentId])
+  @@index([customerId])
+  @@index([lastMessageAt])
+}
+
+// ==================== 訊息模型 ====================
+
+model Message {
+  id             String            @id @default(uuid())
+  conversationId String
+  conversation   Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // 發送者
+  senderType     MessageSenderType
+  senderId       String?           // User.id (AGENT) 或 Customer.id (CUSTOMER) 或 null (BOT)
+  senderAgent    User?             @relation("SentByAgent", fields: [senderId], references: [id])
+
+  // 內容
+  contentType    MessageContentType @default(TEXT)
+  content        String
+  fileUrl        String?
+  fileName       String?
+
+  // 元數據
+  metadata       Json?
+  // metadata 結構：
+  // {
+  //   intent: "TICKET_BOOK",
+  //   confidence: 0.95,
+  //   entities: { destination: "東京" },
+  //   processingTime: 1500
+  // }
+
+  isRead         Boolean            @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+  @@index([senderType])
+  @@index([createdAt])
+}
+
+// ==================== 每日統計模型 ====================
+
+model DailyStats {
+  id                  String   @id @default(uuid())
+  regionId            String
+  region              Region   @relation(fields: [regionId], references: [id])
+  date                DateTime @db.Date
+
+  // 核心統計
+  totalConversations  Int      @default(0) // 開啟會話數
+  humanTransfers      Int      @default(0) // 轉接真人數
+  totalMessages       Int      @default(0) // 總對話數
+
+  // 細分統計
+  botMessages         Int      @default(0)
+  agentMessages       Int      @default(0)
+  customerMessages    Int      @default(0)
+
+  // 效能指標
+  avgResponseTime     Int?     // 平均回應時間 (ms)
+  avgConversationDuration Int? // 平均對話時長 (ms)
+  resolvedByBot       Int      @default(0) // AI 解決數
+
+  // 意圖分布
+  intentBreakdown     Json?
+  // intentBreakdown 結構：
+  // {
+  //   "TICKET_BOOK": 25,
+  //   "TICKET_CHANGE": 18,
+  //   "VISA_INQUIRY": 15
+  // }
+
+  createdAt DateTime @default(now())
+
+  @@unique([regionId, date])
+  @@index([regionId])
+  @@index([date])
+}
+
+// ==================== 罐頭訊息模型 ====================
+
+model QuickReply {
+  id          String   @id @default(uuid())
+  regionId    String?  // null = 全域可用
+  region      Region?  @relation(fields: [regionId], references: [id])
+
+  title       String   // 標題（用於顯示）
+  content     String   // 訊息內容
+  category    String?  // 分類（可選）
+  shortcut    String?  // 快捷鍵（可選，例如 /hi）
+  sortOrder   Int      @default(0) // 排序
+  isActive    Boolean  @default(true)
+
+  // 建立者
+  createdById String?
+  createdBy   User?    @relation("CreatedQuickReplies", fields: [createdById], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([regionId])
+  @@index([category])
+  @@index([isActive])
+  @@index([shortcut])
+}
+
+// ==================== Refresh Token 模型 ====================
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}

@@ -9,6 +9,7 @@ export const ENTITY_TYPES = {
   DATE: '日期',
   FLIGHT_NO: '航班號',
   DESTINATION: '目的地',
+  PASSENGERS: '旅客人數',
   PASSENGER_NAME: '旅客姓名',
   BOOKING_REF: '訂位代號',
   AIRLINE: '航空公司',
@@ -305,6 +306,49 @@ export function extractSeatPreference(text) {
 }
 
 /**
+ * 提取旅客人數
+ * @param {string} text - 輸入文字
+ * @returns {Object|null} 人數資訊
+ */
+export function extractPassengers(text) {
+  // 數字 + 位/人/個人
+  const patterns = [
+    /(\d+)\s*位/,
+    /(\d+)\s*人/,
+    /(\d+)\s*個人/,
+    /(\d+)\s*大人/,
+    /(\d+)\s*位大人/,
+    /^(\d+)$/,  // 純數字（在對話上下文中）
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      const count = parseInt(match[1], 10);
+      if (count >= 1 && count <= 50) {  // 合理範圍
+        return { original: match[0], normalized: count.toString(), count };
+      }
+    }
+  }
+
+  // 中文數字
+  const chineseNumMap = {
+    '一': 1, '二': 2, '三': 3, '四': 4, '五': 5,
+    '六': 6, '七': 7, '八': 8, '九': 9, '十': 10,
+    '兩': 2,
+  };
+
+  const chinesePattern = /([一二三四五六七八九十兩])\s*位/;
+  const chineseMatch = text.match(chinesePattern);
+  if (chineseMatch && chineseNumMap[chineseMatch[1]]) {
+    const count = chineseNumMap[chineseMatch[1]];
+    return { original: chineseMatch[0], normalized: count.toString(), count };
+  }
+
+  return null;
+}
+
+/**
  * 提取統一編號
  * @param {string} text - 輸入文字
  * @returns {Object|null} 統一編號
@@ -369,6 +413,7 @@ export function extractAllEntities(text) {
     flightNumbers: extractFlightNumbers(text),
     bookingRefs: extractBookingRefs(text),
     destinations: extractDestinations(text),
+    passengers: extractPassengers(text),
     class: extractClass(text),
     direction: extractDirection(text),
     seatPreference: extractSeatPreference(text),
@@ -406,6 +451,10 @@ export function flattenEntities(entities) {
     }
   }
 
+  if (entities.passengers) {
+    flat.passengers = entities.passengers.normalized;
+  }
+
   if (entities.class) {
     flat.class = entities.class.normalized;
   }
@@ -437,6 +486,7 @@ export default {
   extractFlightNumbers,
   extractBookingRefs,
   extractDestinations,
+  extractPassengers,
   extractClass,
   extractDirection,
   extractSeatPreference,

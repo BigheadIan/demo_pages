@@ -1,0 +1,49 @@
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'asia-east1-docker.pkg.dev/$PROJECT_ID/golden-dragon/backend:latest'
+      - '.'
+
+  # Push the image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'asia-east1-docker.pkg.dev/$PROJECT_ID/golden-dragon/backend:latest'
+
+  # Deploy to Cloud Run with Cloud SQL connection
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'golden-dragon-ai'
+      - '--image'
+      - 'asia-east1-docker.pkg.dev/$PROJECT_ID/golden-dragon/backend:latest'
+      - '--region'
+      - 'asia-east1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
+      - '--memory'
+      - '512Mi'
+      - '--cpu'
+      - '1'
+      - '--min-instances'
+      - '1'
+      - '--max-instances'
+      - '5'
+      - '--add-cloudsql-instances'
+      - 'gen-lang-client-0145804280:asia-east1:golden-dragon-db'
+      - '--set-env-vars'
+      - 'NODE_ENV=production,CLOUD_SQL_CONNECTION_NAME=gen-lang-client-0145804280:asia-east1:golden-dragon-db,DB_USER=postgres,DB_PASSWORD=GoldenDragon2024!,DB_NAME=golden_dragon,GEMINI_API_KEY=AIzaSyC0tx_vnc6O1ZFUk6P7sVfd7gxUixga8YM,JWT_SECRET=golden-dragon-jwt-secret-key-2024,JWT_REFRESH_SECRET=golden-dragon-refresh-secret-key-2024,JWT_EXPIRES_IN=15m,JWT_REFRESH_EXPIRES_IN=7d,FRONTEND_URL=https://golden-dragon-admin-xzhlnkkcdq-de.a.run.app,LINE_CHANNEL_ACCESS_TOKEN=kMvcJ799WTcLBxYgxszjvhyBAHvLCk1N8Ldf4/4SekpuSDr8wXTUydvraSmXvdcz1vV8dKDc7m8mzCf2vnXZ+Sh1t6PpdyAtdFU+lQGQ+g/qOH2+7hh6ytYxWRPjHLyEq7LgyJref3yUN+9dBKtMTAdB04t89/1O/w1cDnyilFU=,LINE_CHANNEL_SECRET=3eca29558ab9a747695328c5b946aaa4,ADMIN_EMAIL=bigheadian1166@gmail.com,ADMIN_PASSWORD=BigheadIan1166'
+
+images:
+  - 'asia-east1-docker.pkg.dev/$PROJECT_ID/golden-dragon/backend:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

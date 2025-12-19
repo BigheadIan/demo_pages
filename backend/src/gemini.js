@@ -206,10 +206,87 @@ export function estimateCost(inputTokens, outputTokens) {
   };
 }
 
+/**
+ * AI 編輯助手 - 改寫文字
+ * @param {string} text - 原始文字
+ * @param {string} mode - 改寫模式 (formal | friendly | concise | expand | correct)
+ * @param {string} [customInstruction] - 自訂指令
+ * @returns {Object} 改寫結果
+ */
+export async function rewriteText(text, mode, customInstruction = null) {
+  if (!genAI) {
+    throw new Error('Gemini API 尚未初始化');
+  }
+
+  const startTime = Date.now();
+
+  // 模式對應的指令
+  const modeInstructions = {
+    formal: '將以下文字改寫成更正式、專業的語氣，適合商務溝通：',
+    friendly: '將以下文字改寫成更親切、友善的語氣，讓客戶感到溫暖：',
+    concise: '將以下文字精簡，保留重點，去除冗詞：',
+    expand: '將以下文字擴展，加入更多細節和說明，使內容更完整：',
+    correct: '修正以下文字的錯字、文法錯誤，並改善可讀性：',
+    custom: customInstruction || '改寫以下文字：',
+  };
+
+  const instruction = modeInstructions[mode] || modeInstructions.correct;
+
+  try {
+    // 使用輕量級設定進行快速回應
+    const flashModel = genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash-exp', // 使用最快的模型
+    });
+
+    const prompt = `${instruction}
+
+原文：
+${text}
+
+改寫後的文字（只輸出改寫結果，不要加任何說明或標題）：`;
+
+    const result = await flashModel.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 1000,
+      },
+    });
+
+    const rewrittenText = result.response.text().trim();
+    const endTime = Date.now();
+
+    // 估算 token
+    const inputTokens = Math.ceil(prompt.length / 2);
+    const outputTokens = Math.ceil(rewrittenText.length / 2);
+
+    return {
+      success: true,
+      original: text,
+      rewritten: rewrittenText,
+      mode,
+      processingTime: endTime - startTime,
+      tokenUsage: {
+        input: inputTokens,
+        output: outputTokens,
+        total: inputTokens + outputTokens,
+      },
+      estimatedCost: estimateCost(inputTokens, outputTokens),
+    };
+  } catch (error) {
+    console.error('❌ AI 改寫失敗:', error);
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+}
+
 export default {
   initGemini,
   faqAutoReply,
   classifyIntent,
   chat,
   estimateCost,
+  rewriteText,
 };
